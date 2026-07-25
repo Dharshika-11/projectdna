@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications | PROJECTDNA NEXUS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="nexus-card p-4 mb-4 bg-dark text-white">
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-bell text-primary me-2"></i> System & Project Notifications</h3>
+    <p class="mb-0 text-white-50 fs-14">Stay informed on milestone status changes, risk alerts, and chat updates.</p>
+  </div>
+
+  <div class="nexus-card p-4">
+    <div class="list-group list-group-flush">
+      {% for notif in notifications %}
+        <div class="list-group-item p-3 border-bottom d-flex justify-content-between align-items-center {% if not notif.is_read %}bg-light{% endif %}">
+          <div>
+            <h6 class="fw-bold text-dark mb-1">{{ notif.title }}</h6>
+            <p class="text-muted fs-14 mb-1">{{ notif.message }}</p>
+            <small class="text-primary fs-12">{{ notif.created_at|date:"M d, Y H:i" }}</small>
+          </div>
+          {% if not notif.is_read %}
+            <a href="{% url 'collaboration:mark_notification_read' notif.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Mark Read</a>
+          {% else %}
+            <span class="badge bg-secondary">Read</span>
+          {% endif %}
+        </div>
+      {% empty %}
+        <div class="text-center py-5 text-muted">
+          <i class="fa-regular fa-bell-slash fs-1 mb-2"></i>
+          <p class="mb-0">No notifications in your inbox.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

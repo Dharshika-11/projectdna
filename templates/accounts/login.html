@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block landing_content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-dark position-relative py-5">
+  <div class="container" style="max-width: 480px;">
+    <div class="nexus-card bg-white p-4 p-md-5 shadow-2xl border-0">
+      <div class="text-center mb-4">
+        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 56px; height: 56px;">
+          <i class="fa-solid fa-dna fs-3"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">Sign In to PROJECTDNA</h3>
+        <p class="text-muted fs-14">Academic Project Lifecycle Platform</p>
+      </div>
+
+      <form method="POST" action="{% url 'accounts:login' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-dark fs-14">Username or Roll Number</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="fa-solid fa-user text-muted"></i></span>
+            {{ form.username }}
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold text-dark fs-14">Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="fa-solid fa-lock text-muted"></i></span>
+            {{ form.password }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold shadow mb-3">
+          <i class="fa-solid fa-right-to-bracket me-2"></i> Authenticate Account
+        </button>
+      </form>
+
+      <!-- Quick Demo Login Presets -->
+      <div class="border-top pt-3 mt-3">
+        <small class="text-muted d-block text-center mb-2 fw-semibold">QUICK DEMO ACCESSIBILITY PRESETS</small>
+        <div class="row g-2">
+          <div class="col-6">
+            <button onclick="fillLogin('alex_student', 'student123')" class="btn btn-outline-success btn-sm w-100 text-truncate">
+              <i class="fa-solid fa-user-graduate me-1"></i> Student Demo
+            </button>
+          </div>
+          <div class="col-6">
+            <button onclick="fillLogin('dr_smith', 'faculty123')" class="btn btn-outline-primary btn-sm w-100 text-truncate">
+              <i class="fa-solid fa-chalkboard-user me-1"></i> Faculty Demo
+            </button>
+          </div>
+          <div class="col-6">
+            <button onclick="fillLogin('hod_cs', 'hod123')" class="btn btn-outline-warning btn-sm w-100 text-truncate">
+              <i class="fa-solid fa-building-columns me-1"></i> HOD Demo
+            </button>
+          </div>
+          <div class="col-6">
+            <button onclick="fillLogin('admin', 'admin123')" class="btn btn-outline-danger btn-sm w-100 text-truncate">
+              <i class="fa-solid fa-shield-halved me-1"></i> Admin Demo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-4 border-top pt-3">
+        <p class="text-muted fs-14 mb-0">Don't have an account? <a href="{% url 'accounts:register' %}" class="text-primary fw-bold text-decoration-none">Register Student</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function fillLogin(u, p) {
+  document.querySelector('input[name="username"]').value = u;
+  document.querySelector('input[name="password"]').value = p;
+}
+</script>
+{% endblock %}

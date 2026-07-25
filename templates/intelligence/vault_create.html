@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Publish Knowledge Vault Insight | PROJECTDNA NEXUS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="nexus-card p-4 p-md-5">
+        <h4 class="fw-bold mb-4 border-bottom pb-3"><i class="fa-solid fa-vault text-primary me-2"></i> Publish Knowledge Insight</h4>
+        
+        <form method="POST" action="{% url 'intelligence:vault_create' %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Article Title</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Django Middleware Session Management Best Practice" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Insight Category</label>
+            <select name="category" class="form-select">
+              <option value="LESSON_LEARNED">Lessons Learned</option>
+              <option value="BEST_PRACTICE" selected>Best Practices</option>
+              <option value="FUTURE_IMPROVEMENT">Future Improvements</option>
+              <option value="ARCHITECTURE">Architecture Pattern</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Content & Detail</label>
+            <textarea name="content" class="form-control" rows="6" placeholder="Describe the technical solution, takeaway, or pattern..." required></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Tags (Comma-separated)</label>
+            <input type="text" name="tags" class="form-control" placeholder="e.g. Django, Security, SQLite, RBAC">
+          </div>
+
+          <button type="submit" class="btn btn-primary px-5 py-2.5 rounded-3 fw-bold shadow">
+            Publish to Knowledge Vault
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

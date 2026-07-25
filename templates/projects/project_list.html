@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Projects Archive | PROJECTDNA NEXUS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="nexus-card p-4 mb-4 bg-dark text-white">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+      <div>
+        <h3 class="fw-bold mb-1"><i class="fa-solid fa-folder-tree text-primary me-2"></i> Academic Projects Directory</h3>
+        <p class="mb-0 text-white-50 fs-14">Repository of active proposals, in-progress projects, and completed evolutions.</p>
+      </div>
+      {% if user.is_student %}
+        <a href="{% url 'projects:create' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow text-nowrap align-self-start align-self-md-auto">
+          <i class="fa-solid fa-plus me-1"></i> Submit New Proposal
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="nexus-card p-4">
+    <div class="row g-4">
+      {% for project in projects %}
+        <div class="col-md-6 col-lg-4">
+          <div class="border rounded-3 p-3 h-100 bg-light bg-opacity-50 d-flex flex-column justify-content-between">
+            <div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">{{ project.get_status_display }}</span>
+                <span class="badge badge-{% if project.risk_level == 'LOW' %}low{% elif project.risk_level == 'MEDIUM' %}medium{% else %}high{% endif %}">{{ project.get_risk_level_display }}</span>
+              </div>
+              <h5 class="fw-bold text-dark mb-2">
+                <a href="{% url 'core:project_dashboard' project.slug %}" class="text-dark text-decoration-none hover-primary">
+                  {{ project.title }}
+                </a>
+              </h5>
+              <p class="text-muted fs-14 mb-3 text-truncate">{{ project.abstract }}</p>
+            </div>
+            <div>
+              <div class="d-flex justify-content-between text-muted fs-12 mb-3 border-top pt-2">
+                <span>Health: <strong class="text-success">{{ project.health_score }}%</strong></span>
+                <span>Innovation: <strong class="text-info">{{ project.innovation_score }}%</strong></span>
+              </div>
+              <a href="{% url 'core:project_dashboard' project.slug %}" class="btn btn-sm btn-primary w-100 fw-bold">
+                Open Command Center
+              </a>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12 text-center py-5 text-muted">
+          <i class="fa-solid fa-folder-minus fs-1 mb-2"></i>
+          <p class="mb-0">No projects currently available in the platform repository.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

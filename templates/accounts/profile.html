@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}My Account Profile | PROJECTDNA NEXUS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="nexus-card p-4 text-center">
+        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow" style="width: 80px; height: 80px; font-size: 2rem;">
+          {{ user.username|slice:":1"|upper }}
+        </div>
+        <h4 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h4>
+        <p class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-1 rounded-pill mb-3">{{ user.get_role_display }}</p>
+
+        <div class="text-start border-top pt-3 mt-2">
+          <p class="mb-2"><i class="fa-solid fa-envelope text-primary me-2"></i> {{ user.email }}</p>
+          <p class="mb-2"><i class="fa-solid fa-id-card text-info me-2"></i> {{ user.roll_number|default:"N/A" }}</p>
+          <p class="mb-2"><i class="fa-solid fa-building-columns text-success me-2"></i> {{ user.department.name|default:"Unassigned" }}</p>
+          <p class="mb-0"><i class="fa-solid fa-phone text-warning me-2"></i> {{ user.phone_number|default:"Not Provided" }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="nexus-card p-4">
+        <h5 class="fw-bold mb-4"><i class="fa-solid fa-user-pen text-primary me-2"></i> Update Profile Information</h5>
+        
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">First Name</label>
+              <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Last Name</label>
+              <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email</label>
+              <input type="email" name="email" class="form-control" value="{{ user.email }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Phone Number</label>
+              <input type="text" name="phone_number" class="form-control" value="{{ user.phone_number|default:'' }}">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Bio / Objective</label>
+            {{ p_form.bio }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Skills & Stack</label>
+            {{ p_form.skills }}
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold"><i class="fa-brands fa-github me-1"></i> GitHub URL</label>
+              {{ p_form.github_url }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold"><i class="fa-brands fa-linkedin me-1"></i> LinkedIn URL</label>
+              {{ p_form.linkedin_url }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold"><i class="fa-solid fa-globe me-1"></i> Portfolio</label>
+              {{ p_form.website }}
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary px-4 py-2 rounded-3 fw-bold shadow">
+            Save Profile Changes
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

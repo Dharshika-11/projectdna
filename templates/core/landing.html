@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block landing_content %}
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark bg-opacity-75 backdrop-blur border-bottom border-secondary border-opacity-25 py-3">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white fs-4" href="#">
+      <i class="fa-solid fa-dna text-primary fs-3"></i>
+      PROJECT<span class="text-primary">DNA</span> NEXUS
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarLanding">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarLanding">
+      <ul class="navbar-nav ms-auto align-items-center gap-3">
+        <li class="nav-item"><a class="nav-link text-white-50" href="#features">Features</a></li>
+        <li class="nav-item"><a class="nav-link text-white-50" href="#pillars">Platform Pillars</a></li>
+        <li class="nav-item"><a class="nav-link text-white-50" href="#roles">Portal Access</a></li>
+        <li class="nav-item"><a class="btn btn-outline-light px-4 rounded-pill" href="{% url 'accounts:login' %}">Sign In</a></li>
+        <li class="nav-item"><a class="btn btn-primary px-4 rounded-pill shadow" href="{% url 'accounts:register' %}">Get Started</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero-nexus d-flex align-items-center min-vh-100 position-relative">
+  <div class="container position-relative z-1 pt-5">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7" data-aos="fade-right">
+        <span class="badge bg-primary bg-opacity-20 text-primary border border-primary border-opacity-50 px-3 py-2 rounded-pill mb-3">
+          <i class="fa-solid fa-bolt me-1"></i> Intelligent Academic Project Evolution Platform
+        </span>
+        <h1 class="display-3 fw-extrabold text-white lh-sm mb-4">
+          From Project Idea to Final Evaluation — <span class="text-transparent bg-clip-text bg-gradient-to-r text-primary">Every Decision, Every Contribution.</span>
+        </h1>
+        <p class="lead text-light opacity-75 mb-5 fs-5">
+          PROJECTDNA NEXUS creates an immutable digital record of academic software engineering projects. Featuring Replay Mode, SHA-256 DNA Fingerprinting, Dynamic Risk Prediction, and Automated Contribution Analysis.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-lg">
+            <i class="fa-solid fa-right-to-bracket me-2"></i> Access Platform Portal
+          </a>
+          <a href="{% url 'accounts:register' %}" class="btn btn-outline-light btn-lg px-5 rounded-pill">
+            <i class="fa-solid fa-user-plus me-2"></i> Register Student Account
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-5" data-aos="fade-left">
+        <div class="nexus-card bg-dark bg-opacity-75 text-white p-4 border border-secondary border-opacity-50 shadow-2xl">
+          <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary pb-3">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-graduation-cap text-primary fs-3"></i>
+              <div>
+                <h6 class="mb-0 text-white fw-bold">ACADEMIC LIFECYCLE METRICS</h6>
+                <small class="text-muted">Real-Time Evaluation Platform</small>
+              </div>
+            </div>
+            <span class="badge bg-success rounded-pill px-3 py-2">LIVE MONITOR</span>
+          </div>
+          <div class="row g-2 text-center">
+            <div class="col-4">
+              <div class="bg-secondary bg-opacity-20 p-2 rounded-3">
+                <small class="text-muted d-block fs-12">Health Score</small>
+                <span class="fw-bold text-success fs-5">92.5%</span>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="bg-secondary bg-opacity-20 p-2 rounded-3">
+                <small class="text-muted d-block fs-12">Innovation</small>
+                <span class="fw-bold text-info fs-5">88.0%</span>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="bg-secondary bg-opacity-20 p-2 rounded-3">
+                <small class="text-muted d-block fs-12">Delay Risk</small>
+                <span class="fw-bold text-primary fs-5">LOW</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Counter -->
+<section class="py-5 bg-dark text-white border-top border-bottom border-secondary border-opacity-25">
+  <div class="container">
+    <div class="row text-center g-4">
+      <div class="col-md-3 col-6">
+        <h2 class="display-4 fw-bold text-primary mb-1">{{ total_projects|default:12 }}</h2>
+        <p class="text-muted text-uppercase fs-13 mb-0">Active Projects</p>
+      </div>
+      <div class="col-md-3 col-6">
+        <h2 class="display-4 fw-bold text-success mb-1">{{ total_students|default:48 }}</h2>
+        <p class="text-muted text-uppercase fs-13 mb-0">Enrolled Students</p>
+      </div>
+      <div class="col-md-3 col-6">
+        <h2 class="display-4 fw-bold text-info mb-1">{{ total_departments|default:4 }}</h2>
+        <p class="text-muted text-uppercase fs-13 mb-0">Departments</p>
+      </div>
+      <div class="col-md-3 col-6">
+        <h2 class="display-4 fw-bold text-warning mb-1">{{ vault_insights|default:150 }}</h2>
+        <p class="text-muted text-uppercase fs-13 mb-0">Vault Knowledge Entries</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Grid -->
+<section id="features" class="py-5 bg-light">
+  <div class="container py-5">
+    <div class="text-center max-w-2xl mx-auto mb-5" data-aos="fade-up">
+      <h2 class="fw-extrabold text-dark display-5 mb-3">Enterprise Architectural Pillars</h2>
+      <p class="text-muted fs-5">Engineered specifically for university project coordination, continuous faculty evaluation, and immutable project archives.</p>
+    </div>
+
+    <div class="row g-4">
+      <!-- 1. Replay Mode -->
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="nexus-card p-4 h-100">
+          <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 d-inline-block mb-3">
+            <i class="fa-solid fa-clock-rotate-left fs-3"></i>
+          </div>
+          <h5 class="fw-bold mb-2">1. Replay Mode</h5>
+          <p class="text-muted">Time-travel through every project iteration. Replay milestone submissions, commit activity, and work logs sequentially.</p>
+        </div>
+      </div>
+      <!-- 2. Knowledge Graph -->
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="nexus-card p-4 h-100">
+          <div class="bg-info bg-opacity-10 text-info rounded-3 p-3 d-inline-block mb-3">
+            <i class="fa-solid fa-diagram-project fs-3"></i>
+          </div>
+          <h5 class="fw-bold mb-2">2. Knowledge Graph</h5>
+          <p class="text-muted">Interactive graph visualizer mapping architectural modules, team member contributions, dependencies, and open defects.</p>
+        </div>
+      </div>
+      <!-- 3. Risk Prediction -->
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="nexus-card p-4 h-100">
+          <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-3 d-inline-block mb-3">
+            <i class="fa-solid fa-triangle-exclamation fs-3"></i>
+          </div>
+          <h5 class="fw-bold mb-2">3. Risk Prediction Engine</h5>
+          <p class="text-muted">Proactive heuristic algorithm detecting overdue milestones and stagnant activity to warn faculty prior to evaluation deadlines.</p>
+        </div>
+      </div>
+      <!-- 4. Contribution Analyzer -->
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="400">
+        <div class="nexus-card p-4 h-100">
+          <div class="bg-success bg-opacity-10 text-success rounded-3 p-3 d-inline-block mb-3">
+            <i class="fa-solid fa-chart-user fs-3"></i>
+          </div>
+          <h5 class="fw-bold mb-2">4. Contribution Score</h5>
+          <p class="text-muted">Automated fair share calculation measuring hours logged, code snippets, tasks completed, and bug resolutions for each team member.</p>
+        </div>
+      </div>
+      <!-- 5. Decision Log (ADR) -->
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="500">
+        <div class="nexus-card p-4 h-100">
+          <div class="bg-secondary bg-opacity-10 text-dark rounded-3 p-3 d-inline-block mb-3">
+            <i class="fa-solid fa-file-contract fs-3"></i>
+          </div>
+          <h5 class="fw-bold mb-2">5. Architectural Decision Log</h5>
+          <p class="text-muted">Track every design decision (ADR) with context, options considered, and consequences for complete transparency.</p>
+        </div>
+      </div>
+      <!-- 6. Knowledge Vault -->
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="600">
+        <div class="nexus-card p-4 h-100">
+          <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-3 d-inline-block mb-3">
+            <i class="fa-solid fa-vault fs-3"></i>
+          </div>
+          <h5 class="fw-bold mb-2">6. Knowledge Vault</h5>
+          <p class="text-muted">Institutional repository storing best practices, lessons learned, and reusable codebase patterns for future student cohorts.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-dark text-white-50 py-4 border-top border-secondary border-opacity-25">
+  <div class="container text-center">
+    <p class="mb-0">© 2026 PROJECTDNA NEXUS Platform. All Rights Reserved. Built with Django 5 & Bootstrap 5.</p>
+  </div>
+</footer>
+{% endblock %}

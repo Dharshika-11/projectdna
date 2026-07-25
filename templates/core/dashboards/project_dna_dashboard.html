@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Project DNA Fingerprint | {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="nexus-card p-4 mb-4 bg-dark text-white">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <span class="badge bg-primary px-3 py-1 mb-2">IMMUTABLE DIGITAL IDENTIFIER</span>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-dna text-primary me-2"></i> Project DNA Fingerprint & Radar Vector</h2>
+        <p class="mb-0 text-white-50 fs-14">Cryptographic proof of codebase evolution, technical metrics, and multi-dimensional performance vector.</p>
+      </div>
+      <a href="{% url 'intelligence:recalculate_metrics' project.slug %}" class="btn btn-outline-light rounded-pill px-4">
+        <i class="fa-solid fa-rotate me-1 text-info"></i> Recalculate DNA Hash
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: SHA-256 Box & Details -->
+    <div class="col-lg-5">
+      <div class="nexus-card p-4 h-100">
+        <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="fa-solid fa-fingerprint text-primary me-2"></i> Fingerprint Specifications</h5>
+        
+        <div class="mb-4">
+          <label class="form-label text-muted fs-12 text-uppercase fw-bold">SHA-256 Hash Representation</label>
+          <div class="dna-hash-box shadow-sm">
+            {{ dna.dna_hash|default:"3A8F9C20D7E1B4F..." }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between py-2 border-bottom">
+            <span class="text-muted fs-14">Generation Counter:</span>
+            <span class="fw-bold text-dark">v{{ dna.generation_count }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-2 border-bottom">
+            <span class="text-muted fs-14">Last Hash Re-computation:</span>
+            <span class="fw-bold text-dark">{{ dna.last_computed_at|date:"M d, Y H:i" }} UTC</span>
+          </div>
+          <div class="d-flex justify-content-between py-2 border-bottom">
+            <span class="text-muted fs-14">Project Status:</span>
+            <span class="badge bg-primary">{{ project.get_status_display }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-2">
+            <span class="text-muted fs-14">Heuristic Risk Assessment:</span>
+            <span class="badge badge-{% if project.risk_level == 'LOW' %}low{% elif project.risk_level == 'MEDIUM' %}medium{% else %}high{% endif %}">
+              {{ project.get_risk_level_display }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Chart.js Radar Chart -->
+    <div class="col-lg-7">
+      <div class="nexus-card p-4 h-100">
+        <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="fa-solid fa-chart-radar text-info me-2"></i> Multi-Dimensional Performance Radar Vector</h5>
+        <div style="height: 340px; position: relative;">
+          <canvas id="dnaRadarCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const labels = ['Code Velocity', 'Review Rigor', 'Bug Resolution', 'Innovation Index', 'Documentation Density'];
+  const dataPoints = [
+    parseFloat('{{ vector_dict.code_velocity|default:85.0 }}'),
+    parseFloat('{{ vector_dict.review_rigor|default:80.0 }}'),
+    parseFloat('{{ vector_dict.bug_resolution|default:90.0 }}'),
+    parseFloat('{{ vector_dict.innovation_index|default:75.0 }}'),
+    parseFloat('{{ vector_dict.documentation_density|default:88.0 }}')
+  ];
+  renderDNARadarChart('dnaRadarCanvas', labels, dataPoints);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% load static %}
+<aside class="nexus-sidebar d-flex flex-column justify-content-between p-3">
+  <div>
+    <!-- Brand Header -->
+    <div class="d-flex align-items-center gap-2 px-2 py-3 mb-3 border-bottom border-secondary border-opacity-25">
+      <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <i class="fa-solid fa-dna fs-4"></i>
+      </div>
+      <div>
+        <h5 class="fw-bold mb-0 text-white tracking-wide">PROJECT<span class="text-primary">DNA</span></h5>
+        <small class="text-muted text-uppercase fs-11" style="font-size: 0.65rem;">Nexus Platform</small>
+      </div>
+    </div>
+
+    <!-- User Role Badge -->
+    <div class="px-2 mb-3">
+      <div class="bg-dark bg-opacity-50 border border-secondary border-opacity-25 rounded-3 p-2 d-flex align-items-center gap-2">
+        <i class="fa-solid fa-user-shield text-info"></i>
+        <div>
+          <div class="text-white fs-12 fw-semibold">{{ user.get_full_name|default:user.username }}</div>
+          <small class="text-primary text-uppercase font-monospace" style="font-size: 0.7rem;">{{ user.get_role_display }}</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <ul class="nav nav-pills flex-column mb-auto">
+      <li class="nav-item">
+        <a href="{% url 'core:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' or 'dashboard' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'projects:list' %}" class="nav-link {% if 'projects' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-folder-tree"></i>
+          <span>Projects Archive</span>
+        </a>
+      </li>
+
+      {% if user.is_student %}
+        <li>
+          <a href="{% url 'projects:create' %}" class="nav-link">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>Submit Proposal</span>
+          </a>
+        </li>
+      {% endif %}
+
+      <li>
+        <a href="{% url 'intelligence:vault_list' %}" class="nav-link {% if 'vault' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-vault"></i>
+          <span>Knowledge Vault</span>
+        </a>
+      </li>
+
+      {% if user.is_hod or user.is_admin_role or user.is_faculty %}
+        <li>
+          <a href="{% url 'reports:department_analytics' %}" class="nav-link {% if 'reports' in request.path %}active{% endif %}">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Analytics & Reports</span>
+          </a>
+        </li>
+      {% endif %}
+
+      {% if user.is_admin_role %}
+        <li>
+          <a href="{% url 'core:admin_dashboard' %}" class="nav-link">
+            <i class="fa-solid fa-sliders"></i>
+            <span>System Control</span>
+          </a>
+        </li>
+      {% endif %}
+
+      <li>
+        <a href="{% url 'collaboration:notifications_list' %}" class="nav-link position-relative">
+          <i class="fa-solid fa-bell"></i>
+          <span>Notifications</span>
+          {% if unread_notification_count > 0 %}
+            <span class="badge bg-danger rounded-pill ms-auto">{{ unread_notification_count }}</span>
+          {% endif %}
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Bottom Quick Links -->
+  <div class="border-top border-secondary border-opacity-25 pt-3">
+    <a href="{% url 'accounts:profile' %}" class="nav-link text-white-50">
+      <i class="fa-solid fa-user-gear"></i>
+      <span>My Profile</span>
+    </a>
+    <a href="{% url 'accounts:logout' %}" class="nav-link text-danger">
+      <i class="fa-solid fa-right-from-bracket"></i>
+      <span>Log Out</span>
+    </a>
+  </div>
+</aside>

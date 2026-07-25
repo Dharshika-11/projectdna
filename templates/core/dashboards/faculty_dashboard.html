@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Faculty Dashboard | PROJECTDNA NEXUS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Welcome Banner -->
+  <div class="nexus-card p-4 mb-4 bg-dark text-white position-relative overflow-hidden">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-primary px-3 py-1 mb-2">FACULTY ADVISOR PORTAL</span>
+        <h2 class="fw-bold mb-1">Welcome, {{ user.get_full_name|default:user.username }}</h2>
+        <p class="mb-0 text-white-50 fs-14">{{ user.designation|default:"Faculty Project Advisor" }} | {{ user.department.name }}</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'reports:department_analytics' %}" class="btn btn-outline-light rounded-pill px-4">
+          <i class="fa-solid fa-chart-pie me-1"></i> View Department Analytics
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric Counters -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="nexus-card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted fs-12 text-uppercase fw-bold">Guided Projects</span>
+            <h3 class="fw-bold mb-0 text-primary mt-1">{{ guided_projects|length }}</h3>
+          </div>
+          <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+            <i class="fa-solid fa-folder-tree fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="nexus-card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted fs-12 text-uppercase fw-bold">Pending Proposals</span>
+            <h3 class="fw-bold mb-0 text-warning mt-1">{{ pending_proposals|length }}</h3>
+          </div>
+          <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-3">
+            <i class="fa-solid fa-hourglass-half fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="nexus-card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted fs-12 text-uppercase fw-bold">Active Evolution</span>
+            <h3 class="fw-bold mb-0 text-success mt-1">{{ active_projects|length }}</h3>
+          </div>
+          <div class="bg-success bg-opacity-10 text-success rounded-3 p-3">
+            <i class="fa-solid fa-bolt fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="nexus-card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted fs-12 text-uppercase fw-bold">Elevated Risk Alert</span>
+            <h3 class="fw-bold mb-0 text-danger mt-1">{{ high_risk_projects|length }}</h3>
+          </div>
+          <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-3">
+            <i class="fa-solid fa-triangle-exclamation fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table: Guided Projects Monitoring -->
+  <div class="nexus-card p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+      <h5 class="fw-bold mb-0"><i class="fa-solid fa-list-check text-primary me-2"></i> Guided Project Review & Evaluation Queue</h5>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light fs-13 text-uppercase">
+          <tr>
+            <th>Project Title</th>
+            <th>Team Members</th>
+            <th>Status</th>
+            <th>Health Score</th>
+            <th>Risk Level</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project in guided_projects %}
+            <tr>
+              <td>
+                <div class="fw-bold text-dark">{{ project.title }}</div>
+                <small class="text-muted">Year: {{ project.academic_year }} (Sem {{ project.semester }})</small>
+              </td>
+              <td>
+                {% for member in project.members.all %}
+                  <span class="badge bg-secondary bg-opacity-10 text-dark border me-1">{{ member.student.get_full_name|default:member.student.username }}</span>
+                {% empty %}
+                  <small class="text-muted">No members assigned</small>
+                {% endfor %}
+              </td>
+              <td>
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">{{ project.get_status_display }}</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-grow-1" style="height: 6px; width: 80px;">
+                    <div class="progress-bar bg-success" style="width: {{ project.health_score }}%;"></div>
+                  </div>
+                  <span class="fw-bold fs-13">{{ project.health_score }}%</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge badge-{% if project.risk_level == 'LOW' %}low{% elif project.risk_level == 'MEDIUM' %}medium{% else %}high{% endif %}">
+                  {{ project.get_risk_level_display }}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'core:project_dashboard' project.slug %}" class="btn btn-outline-primary" title="Dashboard"><i class="fa-solid fa-gauge"></i></a>
+                  <a href="{% url 'intelligence:risk_prediction' project.slug %}" class="btn btn-outline-warning" title="Risk Prediction"><i class="fa-solid fa-triangle-exclamation"></i></a>
+                  <a href="{% url 'intelligence:replay_mode' project.slug %}" class="btn btn-outline-info" title="Replay Evolution"><i class="fa-solid fa-clock-rotate-left"></i></a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">No projects currently under your guidance.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

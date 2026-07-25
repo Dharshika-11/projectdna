@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.title }} | Project Command Center{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Project Header Card -->
+  <div class="nexus-card p-4 mb-4 bg-white border-start border-4 border-primary">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-1">{{ project.get_status_display }}</span>
+          <span class="badge badge-{% if project.risk_level == 'LOW' %}low{% elif project.risk_level == 'MEDIUM' %}medium{% else %}high{% endif %}">
+            <i class="fa-solid fa-shield-halved me-1"></i> {{ project.get_risk_level_display }}
+          </span>
+          <span class="text-muted fs-13"><i class="fa-solid fa-building-columns me-1"></i> {{ project.department.name }}</span>
+        </div>
+        <h2 class="fw-bold text-dark mb-2">{{ project.title }}</h2>
+        <p class="text-muted mb-3 fs-14">{{ project.abstract }}</p>
+
+        <!-- Metrics Row -->
+        <div class="d-flex flex-wrap gap-4 pt-2 border-top">
+          <div>
+            <small class="text-muted d-block fs-12 text-uppercase fw-bold">Health Velocity</small>
+            <span class="fw-bold text-success fs-5"><i class="fa-solid fa-heart-pulse me-1"></i> {{ project.health_score }}%</span>
+          </div>
+          <div>
+            <small class="text-muted d-block fs-12 text-uppercase fw-bold">Innovation Score</small>
+            <span class="fw-bold text-info fs-5"><i class="fa-solid fa-lightbulb me-1"></i> {{ project.innovation_score }}%</span>
+          </div>
+          <div>
+            <small class="text-muted d-block fs-12 text-uppercase fw-bold">Faculty Advisor</small>
+            <span class="fw-bold text-dark fs-14"><i class="fa-solid fa-user-tie me-1"></i> {{ project.guide.get_full_name|default:"Unassigned" }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 text-lg-end mt-4 mt-lg-0 border-start ps-lg-4">
+        <div class="d-grid gap-2">
+          <a href="{% url 'core:project_dna_dashboard' project.slug %}" class="btn btn-outline-primary rounded-3 btn-sm">
+            <i class="fa-solid fa-dna me-1"></i> Open Project DNA Dashboard
+          </a>
+          <a href="{% url 'intelligence:replay_mode' project.slug %}" class="btn btn-outline-info rounded-3 btn-sm">
+            <i class="fa-solid fa-clock-rotate-left me-1"></i> Launch Replay Mode
+          </a>
+          <a href="{% url 'intelligence:knowledge_graph' project.slug %}" class="btn btn-outline-dark rounded-3 btn-sm">
+            <i class="fa-solid fa-diagram-project me-1"></i> Knowledge Graph
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Launchers Row -->
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <button class="btn btn-primary rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalWorkLog">
+      <i class="fa-solid fa-plus me-1"></i> Submit Daily Work Log
+    </button>
+    <button class="btn btn-outline-dark rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalTask">
+      <i class="fa-solid fa-tasks me-1"></i> Create Task
+    </button>
+    <button class="btn btn-outline-danger rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalBug">
+      <i class="fa-solid fa-bug me-1"></i> Report Defect
+    </button>
+    <button class="btn btn-outline-secondary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalDecision">
+      <i class="fa-solid fa-file-contract me-1"></i> Log Architecture Decision (ADR)
+    </button>
+    <a href="{% url 'collaboration:project_chat' project.slug %}" class="btn btn-outline-success rounded-pill px-3 ms-auto">
+      <i class="fa-solid fa-comments me-1"></i> Team Chat Room
+    </a>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <ul class="nav nav-tabs nav-tabs-bordered mb-4" id="projectTab" role="tablist">
+    <li class="nav-item">
+      <button class="nav-link active fw-bold" id="milestones-tab" data-bs-toggle="tab" data-bs-target="#milestones">
+        <i class="fa-solid fa-flag me-1"></i> Milestones ({{ milestones|length }})
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link fw-bold" id="worklogs-tab" data-bs-toggle="tab" data-bs-target="#worklogs">
+        <i class="fa-solid fa-clock-rotate-left me-1"></i> Daily Work Logs ({{ work_logs|length }})
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link fw-bold" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks">
+        <i class="fa-solid fa-list-check me-1"></i> Task Manager ({{ tasks|length }})
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link fw-bold" id="bugs-tab" data-bs-toggle="tab" data-bs-target="#bugs">
+        <i class="fa-solid fa-bug me-1"></i> Bug Tracker ({{ bugs|length }})
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link fw-bold" id="adr-tab" data-bs-toggle="tab" data-bs-target="#adr">
+        <i class="fa-solid fa-book me-1"></i> Architectural Decision Log ({{ decision_logs|length }})
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Contents -->
+  <div class="tab-content" id="projectTabContent">
+    <!-- Milestones Tab -->
+    <div class="tab-pane fade show active" id="milestones">
+      <div class="nexus-card p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+          <h5 class="fw-bold mb-0">Project Milestones & Deliverables</h5>
+          {% if user.is_faculty or user.is_student %}
+            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalMilestone">+ Add Milestone</button>
+          {% endif %}
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light fs-13 text-uppercase">
+              <tr>
+                <th>Title</th>
+                <th>Due Date</th>
+                <th>Weight Marks</th>
+                <th>Status</th>
+                <th>Faculty Feedback</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for m in milestones %}
+                <tr>
+                  <td class="fw-bold">{{ m.title }}</td>
+                  <td>{{ m.due_date }}</td>
+                  <td><span class="badge bg-secondary">{{ m.weight_marks }} Marks</span></td>
+                  <td><span class="badge bg-info bg-opacity-20 text-info border border-info">{{ m.get_status_display }}</span></td>
+                  <td><small class="text-muted">{{ m.feedback|default:"No feedback recorded" }}</small></td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-center py-4 text-muted">No milestones registered yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work Logs Tab -->
+    <div class="tab-pane fade" id="worklogs">
+      <div class="nexus-card p-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Daily Contributor Work Logs</h5>
+        <div class="list-group list-group-flush">
+          {% for log in work_logs %}
+            <div class="list-group-item p-3 border-bottom">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <h6 class="fw-bold text-dark mb-0">{{ log.title }}</h6>
+                <span class="badge bg-success bg-opacity-10 text-success">{{ log.hours_spent }} Hours Logged</span>
+              </div>
+              <p class="text-muted fs-14 mb-2">{{ log.description }}</p>
+              <div class="d-flex gap-3 text-muted fs-12">
+                <span><i class="fa-solid fa-user me-1"></i> {{ log.student.get_full_name|default:log.student.username }}</span>
+                <span><i class="fa-regular fa-calendar me-1"></i> {{ log.date_logged }}</span>
+                {% if log.commit_hash %}<span><i class="fa-solid fa-code-commit me-1"></i> SHA: <code>{{ log.commit_hash }}</code></span>{% endif %}
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-center py-4 text-muted">No work logs submitted.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks Tab -->
+    <div class="tab-pane fade" id="tasks">
+      <div class="nexus-card p-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Active Task Board</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Task</th>
+                <th>Assigned To</th>
+                <th>Priority</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in tasks %}
+                <tr>
+                  <td class="fw-bold">{{ t.title }}</td>
+                  <td>{{ t.assigned_to.get_full_name|default:"Unassigned" }}</td>
+                  <td><span class="badge bg-warning bg-opacity-20 text-warning">{{ t.get_priority_display }}</span></td>
+                  <td><span class="badge bg-secondary">{{ t.get_status_display }}</span></td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="4" class="text-center py-3 text-muted">No tasks created.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bugs Tab -->
+    <div class="tab-pane fade" id="bugs">
+      <div class="nexus-card p-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Defects & Bug Tracking</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Bug Title</th>
+                <th>Reporter</th>
+                <th>Severity</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in bugs %}
+                <tr>
+                  <td class="fw-bold">BUG-{{ b.id }}: {{ b.title }}</td>
+                  <td>{{ b.reported_by.username }}</td>
+                  <td><span class="badge bg-danger bg-opacity-20 text-danger">{{ b.get_severity_display }}</span></td>
+                  <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ b.get_status_display }}</span></td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="4" class="text-center py-3 text-muted">No bugs reported cleanly!</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADR Tab -->
+    <div class="tab-pane fade" id="adr">
+      <div class="nexus-card p-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Architectural Decision Records (ADRs)</h5>
+        {% for d in decision_logs %}
+          <div class="border rounded-3 p-3 mb-3 bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="fw-bold mb-0">ADR-{{ d.id }}: {{ d.title }}</h6>
+              <span class="badge bg-success">{{ d.get_status_display }}</span>
+            </div>
+            <p class="fs-14 text-dark mb-1"><strong>Context:</strong> {{ d.context }}</p>
+            <p class="fs-14 text-dark mb-1"><strong>Decision:</strong> {{ d.decision_taken }}</p>
+            <small class="text-muted">Author: {{ d.author.username }} | {{ d.created_at|date:"M d, Y" }}</small>
+          </div>
+        {% empty %}
+          <p class="text-center py-4 text-muted">No architectural decisions recorded.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Daily Work Log -->
+<div class="modal fade" id="modalWorkLog" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'activity:worklog_create' project.slug %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Submit Daily Work Log</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Task Title</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Implemented User Authentication API" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Detailed Description</label>
+            <textarea name="description" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold">Hours Spent</label>
+              <input type="number" step="0.5" name="hours_spent" class="form-control" value="2.0">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Git Commit SHA</label>
+              <input type="text" name="commit_hash" class="form-control" placeholder="e.g. a1b2c3d">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Code Snippet (Optional)</label>
+            <textarea name="code_snippet" class="form-control font-monospace fs-12" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary fw-bold px-4">Save Work Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Create Task -->
+<div class="modal fade" id="modalTask" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'activity:task_create' project.slug %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Create New Task</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Task Title</label>
+            <input type="text" name="title" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description</label>
+            <textarea name="description" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold">Priority</label>
+              <select name="priority" class="form-select">
+                <option value="LOW">Low</option>
+                <option value="MEDIUM" selected>Medium</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Due Date</label>
+              <input type="date" name="due_date" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary fw-bold px-4">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Report Defect -->
+<div class="modal fade" id="modalBug" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'activity:bug_report_create' project.slug %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold text-danger"><i class="fa-solid fa-bug me-1"></i> Report Defect / Bug</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Bug Title</label>
+            <input type="text" name="title" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description</label>
+            <textarea name="description" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Steps to Reproduce</label>
+            <textarea name="steps_to_reproduce" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Severity</label>
+            <select name="severity" class="form-select">
+              <option value="LOW">Low</option>
+              <option value="MEDIUM" selected>Medium</option>
+              <option value="HIGH">High</option>
+              <option value="CRITICAL">Critical Blocking</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger fw-bold px-4">Submit Bug Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Log ADR -->
+<div class="modal fade" id="modalDecision" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'activity:decision_create' project.slug %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-file-contract me-1"></i> Record Architectural Decision (ADR)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Decision Title</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Adopted PostgreSQL over SQLite for production" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Problem / Context</label>
+            <textarea name="context" class="form-control" rows="2" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Decision Taken</label>
+            <textarea name="decision_taken" class="form-control" rows="2" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Consequences & Trade-offs</label>
+            <textarea name="consequences" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary fw-bold px-4">Record Decision</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Milestone -->
+<div class="modal fade" id="modalMilestone" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'projects:milestone_create' project.slug %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-flag me-1"></i> Add Project Milestone</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Milestone Title</label>
+            <input type="text" name="title" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description</label>
+            <textarea name="description" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold">Due Date</label>
+              <input type="date" name="due_date" class="form-control" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Weight Marks</label>
+              <input type="number" name="weight_marks" class="form-control" value="10">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary fw-bold px-4">Add Milestone</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

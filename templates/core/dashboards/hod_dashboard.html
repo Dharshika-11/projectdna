@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}HOD Executive Dashboard | PROJECTDNA NEXUS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="nexus-card p-4 mb-4 bg-gradient-hero text-white">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-warning text-dark fw-bold px-3 py-1 mb-2">HOD EXECUTIVE CONTROL</span>
+        <h2 class="fw-bold mb-1">{{ department.name|default:"Department of Computer Science" }}</h2>
+        <p class="mb-0 text-light opacity-75">Departmental Project Governance & Risk Intelligence Dashboard</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'reports:department_analytics' %}" class="btn btn-primary btn-lg rounded-pill px-4 shadow">
+          <i class="fa-solid fa-file-export me-1"></i> Generate Executive Analytics Report
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric Counters -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="nexus-card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted fs-12 text-uppercase fw-bold">Department Projects</span>
+            <h3 class="fw-bold mb-0 text-primary mt-1">{{ dept_projects|length }}</h3>
+          </div>
+          <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+            <i class="fa-solid fa-building-columns fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="nexus-card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted fs-12 text-uppercase fw-bold">Enrolled Students</span>
+            <h3 class="fw-bold mb-0 text-success mt-1">{{ dept_students|length }}</h3>
+          </div>
+          <div class="bg-success bg-opacity-10 text-success rounded-3 p-3">
+            <i class="fa-solid fa-user-graduate fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="nexus-card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted fs-12 text-uppercase fw-bold">Faculty Guides</span>
+            <h3 class="fw-bold mb-0 text-info mt-1">{{ dept_faculty|length }}</h3>
+          </div>
+          <div class="bg-info bg-opacity-10 text-info rounded-3 p-3">
+            <i class="fa-solid fa-chalkboard-user fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="nexus-card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted fs-12 text-uppercase fw-bold">At Risk Projects</span>
+            <h3 class="fw-bold mb-0 text-danger mt-1">{{ high_risk_projects|length }}</h3>
+          </div>
+          <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-3">
+            <i class="fa-solid fa-triangle-exclamation fs-4"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projects Monitoring Table -->
+  <div class="nexus-card p-4">
+    <h5 class="fw-bold mb-3 border-bottom pb-3"><i class="fa-solid fa-chart-line text-primary me-2"></i> Department Project Monitor</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light fs-13 text-uppercase">
+          <tr>
+            <th>Project</th>
+            <th>Faculty Guide</th>
+            <th>Status</th>
+            <th>Health Score</th>
+            <th>Risk Level</th>
+            <th>DNA Fingerprint</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project in dept_projects %}
+            <tr>
+              <td class="fw-bold text-dark">{{ project.title }}</td>
+              <td>{{ project.guide.get_full_name|default:"Unassigned" }}</td>
+              <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary">{{ project.get_status_display }}</span></td>
+              <td class="fw-bold text-success">{{ project.health_score }}%</td>
+              <td><span class="badge badge-{% if project.risk_level == 'LOW' %}low{% elif project.risk_level == 'MEDIUM' %}medium{% else %}high{% endif %}">{{ project.get_risk_level_display }}</span></td>
+              <td><code class="fs-12">{{ project.dna.dna_hash|slice:":12" }}...</code></td>
+              <td>
+                <a href="{% url 'core:project_dashboard' project.slug %}" class="btn btn-sm btn-primary">Dashboard</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7" class="text-center py-4 text-muted">No department projects recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

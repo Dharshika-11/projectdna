@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Project Proposal | PROJECTDNA NEXUS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="nexus-card p-4 p-md-5">
+        <h4 class="fw-bold mb-4 border-bottom pb-3"><i class="fa-solid fa-plus-circle text-primary me-2"></i> Submit Academic Project Proposal</h4>
+        
+        <form method="POST" action="{% url 'projects:create' %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Project Title</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. AI-Powered Smart Grid Energy Forecasting System" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Project Abstract & Scope</label>
+            <textarea name="abstract" class="form-control" rows="5" placeholder="Detail the problem statement, proposed methodology, tech stack, and expected deliverables..." required></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold"><i class="fa-brands fa-github me-1"></i> Repository URL (Optional)</label>
+            <input type="url" name="github_repo_url" class="form-control" placeholder="https://github.com/username/project-repo">
+          </div>
+
+          <button type="submit" class="btn btn-primary px-5 py-2.5 rounded-3 fw-bold shadow w-100 w-sm-auto text-wrap">
+            Initialize Project & Generate DNA Hash
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

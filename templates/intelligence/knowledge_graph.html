@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Knowledge Graph | {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="nexus-card p-4 mb-4 bg-dark text-white">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <span class="badge bg-primary px-3 py-1 mb-2">INTERACTIVE ENTITY MAP</span>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-diagram-project text-primary me-2"></i> Project Knowledge Graph</h2>
+        <p class="mb-0 text-white-50 fs-14">Interactive graph visualizer. Click any node to inspect architectural relationships & entity metrics.</p>
+      </div>
+      <a href="{% url 'core:project_dashboard' project.slug %}" class="btn btn-outline-light rounded-pill px-4">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Graph Canvas Card -->
+    <div class="col-lg-8">
+      <div class="nexus-card p-4 text-center">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2 text-start">
+          <h5 class="fw-bold mb-0">Interactive Graph Canvas (Click Any Node)</h5>
+          <div class="d-flex gap-2 flex-wrap">
+            <span class="badge bg-primary"><i class="fa-solid fa-circle me-1"></i> Project</span>
+            <span class="badge bg-success"><i class="fa-solid fa-circle me-1"></i> Contributor</span>
+            <span class="badge bg-warning text-dark"><i class="fa-solid fa-circle me-1"></i> Milestone</span>
+            <span class="badge bg-danger"><i class="fa-solid fa-circle me-1"></i> Defect</span>
+          </div>
+        </div>
+
+        <div id="graphCanvasContainer" class="bg-dark rounded-3 position-relative d-flex align-items-center justify-content-center p-3" style="min-height: 480px; cursor: pointer;">
+          <canvas id="knowledgeGraphCanvas" width="800" height="460" class="w-100"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Clicked Node Detail Inspection Card -->
+    <div class="col-lg-4">
+      <div class="nexus-card p-4 h-100" id="nodeInspectorCard">
+        <div class="border-bottom pb-3 mb-3">
+          <span class="badge bg-secondary mb-2" id="nodeTypeBadge">NODE INSPECTOR</span>
+          <h4 class="fw-bold text-dark mb-1" id="nodeTitle">Click a Node on the Graph</h4>
+          <p class="text-muted fs-14 mb-0" id="nodeSubtitle">Select any circular node to view entity attributes, team roles, and relations.</p>
+        </div>
+
+        <div id="nodeDetailContent" class="py-2">
+          <div class="text-center py-4 text-muted">
+            <i class="fa-solid fa-hand-pointer fs-1 mb-2"></i>
+            <p class="mb-0">Hover or click nodes on the left map to explore specifications.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const canvas = document.getElementById('knowledgeGraphCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const graphData = JSON.parse('{{ graph_data|escapejs }}');
+  
+  const nodes = graphData.nodes;
+  const links = graphData.links;
+
+  function resizeCanvas() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = 460;
+  }
+  resizeCanvas();
+
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const radius = Math.min(centerX, centerY) - 80;
+
+  nodes.forEach((node, idx) => {
+    if (idx === 0) {
+      node.x = centerX;
+      node.y = centerY;
+      node.r = 28;
+    } else {
+      const angle = ((idx - 1) / (nodes.length - 1)) * 2 * Math.PI;
+      node.x = centerX + radius * Math.cos(angle);
+      node.y = centerY + radius * Math.sin(angle);
+      node.r = 20;
+    }
+  });
+
+  let selectedNode = nodes[0];
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Links
+    links.forEach(link => {
+      const srcNode = nodes.find(n => n.id === link.source);
+      const tgtNode = nodes.find(n => n.id === link.target);
+      if (srcNode && tgtNode) {
+        ctx.beginPath();
+        ctx.moveTo(srcNode.x, srcNode.y);
+        ctx.lineTo(tgtNode.x, tgtNode.y);
+        ctx.strokeStyle = (selectedNode && (selectedNode.id === srcNode.id || selectedNode.id === tgtNode.id)) 
+          ? 'rgba(56, 189, 248, 0.8)' 
+          : 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = (selectedNode && (selectedNode.id === srcNode.id || selectedNode.id === tgtNode.id)) ? 3 : 1.5;
+        ctx.stroke();
+      }
+    });
+
+    // Draw Nodes
+    nodes.forEach(node => {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.r, 0, 2 * Math.PI);
+      ctx.fillStyle = node.color || '#4e73df';
+      ctx.fill();
+      
+      ctx.strokeStyle = (selectedNode && selectedNode.id === node.id) ? '#ffffff' : 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = (selectedNode && selectedNode.id === node.id) ? 4 : 2;
+      ctx.stroke();
+
+      // Label text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = (selectedNode && selectedNode.id === node.id) ? 'bold 13px Inter, sans-serif' : '11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(node.label, node.x, node.y + node.r + 16);
+    });
+  }
+
+  function selectNode(node) {
+    selectedNode = node;
+    draw();
+
+    document.getElementById('nodeTypeBadge').innerText = (node.type || 'Entity').toUpperCase();
+    document.getElementById('nodeTitle').innerText = node.label;
+    document.getElementById('nodeSubtitle').innerText = 'ID: ' + node.id;
+
+    let html = '<div class="list-group list-group-flush">';
+    html += '<div class="list-group-item px-0"><strong>Node Type:</strong> <span class="badge bg-primary">' + node.type + '</span></div>';
+    html += '<div class="list-group-item px-0"><strong>Entity ID:</strong> ' + node.id + '</div>';
+    
+    const connected = links.filter(l => l.source === node.id || l.target === node.id);
+    html += '<div class="list-group-item px-0"><strong>Connections (' + connected.length + '):</strong><ul class="mt-2 mb-0 ps-3">';
+    connected.forEach(c => {
+      const otherId = c.source === node.id ? c.target : c.source;
+      const otherNode = nodes.find(n => n.id === otherId);
+      html += '<li>' + (otherNode ? otherNode.label : otherId) + ' <small class="text-muted">(' + c.label + ')</small></li>';
+    });
+    html += '</ul></div></div>';
+
+    document.getElementById('nodeDetailContent').innerHTML = html;
+  }
+
+  canvas.addEventListener('click', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+    const clicked = nodes.find(node => {
+      const dx = clickX - node.x;
+      const dy = clickY - node.y;
+      return Math.sqrt(dx * dx + dy * dy) <= node.r + 5;
+    });
+
+    if (clicked) {
+      selectNode(clicked);
+    }
+  });
+
+  selectNode(nodes[0]);
+  window.addEventListener('resize', () => { resizeCanvas(); draw(); });
+});
+</script>
+{% endblock %}

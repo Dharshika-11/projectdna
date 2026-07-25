@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Knowledge Vault | Institutional Repository{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="nexus-card p-4 mb-4 bg-primary text-white">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+      <div>
+        <span class="badge bg-white text-primary fw-bold px-3 py-1 mb-2">INSTITUTIONAL KNOWLEDGE REPOSITORY</span>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-vault text-white me-2"></i> Knowledge Vault</h2>
+        <p class="mb-0 text-white-50 fs-14">Lessons Learned, Architectural Best Practices, and Reusable Patterns across projects.</p>
+      </div>
+      <a href="{% url 'intelligence:vault_create' %}" class="btn btn-light rounded-pill px-4 fw-bold shadow text-nowrap align-self-start align-self-md-auto">
+        <i class="fa-solid fa-plus me-1 text-primary"></i> Publish Insight
+      </a>
+    </div>
+  </div>
+
+  <!-- Category Filter Pills -->
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="{% url 'intelligence:vault_list' %}" class="btn btn-sm btn-{% if not category_filter %}primary{% else %}outline-secondary{% endif %} rounded-pill">All Insights</a>
+    <a href="?category=LESSON_LEARNED" class="btn btn-sm btn-{% if category_filter == 'LESSON_LEARNED' %}primary{% else %}outline-secondary{% endif %} rounded-pill">Lessons Learned</a>
+    <a href="?category=BEST_PRACTICE" class="btn btn-sm btn-{% if category_filter == 'BEST_PRACTICE' %}primary{% else %}outline-secondary{% endif %} rounded-pill">Best Practices</a>
+    <a href="?category=FUTURE_IMPROVEMENT" class="btn btn-sm btn-{% if category_filter == 'FUTURE_IMPROVEMENT' %}primary{% else %}outline-secondary{% endif %} rounded-pill">Future Improvements</a>
+  </div>
+
+  <!-- Insights Grid -->
+  <div class="row g-4">
+    {% for entry in entries %}
+      <div class="col-md-6">
+        <div class="nexus-card p-4 h-100">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">{{ entry.get_category_display }}</span>
+            <small class="text-muted"><i class="fa-regular fa-calendar me-1"></i> {{ entry.created_at|date:"M d, Y" }}</small>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">{{ entry.title }}</h5>
+          <p class="text-muted fs-14 mb-3">{{ entry.content }}</p>
+          <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+            <small class="text-muted"><i class="fa-solid fa-user me-1"></i> Author: {{ entry.author.get_full_name|default:entry.author.username }}</small>
+            {% if entry.tags %}
+              <span class="badge bg-light text-dark border">{{ entry.tags }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12 text-center py-5 text-muted">
+        <i class="fa-solid fa-box-open fs-1 mb-2"></i>
+        <p class="mb-0">No Knowledge Vault entries published in this category yet.</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

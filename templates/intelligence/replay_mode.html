@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Replay Mode Evolution | {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="nexus-card p-4 mb-4 bg-dark text-white">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <span class="badge bg-info px-3 py-1 mb-2">TIME-TRAVEL REPLAY ENGINE</span>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-clock-rotate-left text-info me-2"></i> Project Evolution Replay Mode</h2>
+        <p class="mb-0 text-white-50 fs-14">Reconstruct historical project snapshots, milestone progression, and health trajectory over time.</p>
+      </div>
+      <a href="{% url 'core:project_dashboard' project.slug %}" class="btn btn-outline-light rounded-pill px-4">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Command Center
+      </a>
+    </div>
+  </div>
+
+  <!-- Timeline Interactive Controls Card -->
+  <div class="nexus-card p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+      <h5 class="fw-bold mb-0"><i class="fa-solid fa-sliders text-primary me-2"></i> Timeline Scrubber Controls</h5>
+      <div class="d-flex align-items-center gap-2">
+        <button id="playBtn" class="btn btn-sm btn-primary rounded-pill px-3" onclick="togglePlayReplay()">
+          <i class="fa-solid fa-play me-1" id="playIcon"></i> Play Replay
+        </button>
+        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="stepReplay(-1)">
+          <i class="fa-solid fa-chevron-left"></i> Prev
+        </button>
+        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="stepReplay(1)">
+          Next <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Timeline Range Slider -->
+    <div class="row align-items-center g-3 mb-3">
+      <div class="col-md-9">
+        <input type="range" class="form-range" id="timelineScrubber" min="1" max="{{ snapshots|length }}" value="1" step="1" oninput="updateSnapshotView(this.value)">
+      </div>
+      <div class="col-md-3 text-md-end">
+        <span class="badge bg-primary fs-14 px-3 py-2" id="snapshotVersionBadge">Version 1 of {{ snapshots|length }}</span>
+      </div>
+    </div>
+
+    <!-- Step Marker Pills -->
+    <div class="d-flex flex-wrap gap-2">
+      {% for s in snapshots %}
+        <button class="btn btn-sm btn-outline-info rounded-pill step-marker-btn" id="marker-{{ forloop.counter }}" onclick="updateSnapshotView({{ forloop.counter }})">
+          v{{ s.version_number }}: {{ s.summary_note|truncatechars:20 }}
+        </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Snapshot Detail Cards -->
+  <div class="row g-4">
+    {% for s in snapshots %}
+      <div class="col-12 snapshot-card-item" id="snapshot-card-{{ forloop.counter }}" style="{% if not forloop.first %}display: none;{% endif %}">
+        <div class="nexus-card p-4 border-start border-4 border-info">
+          <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+            <div>
+              <span class="badge bg-info mb-1">SNAPSHOT VERSION {{ s.version_number }}</span>
+              <h4 class="fw-bold text-dark mb-0">{{ s.summary_note|default:"Project Evolution Milestone" }}</h4>
+            </div>
+            <span class="text-muted fs-14"><i class="fa-regular fa-calendar me-1"></i> {{ s.snapshot_timestamp|date:"F d, Y H:i" }}</span>
+          </div>
+
+          <div class="row g-4 mb-4">
+            <div class="col-md-4">
+              <div class="bg-light p-3 rounded-3 border text-center">
+                <small class="text-muted d-block text-uppercase fw-bold fs-12">Health Score</small>
+                <h3 class="fw-bold text-success mb-0 mt-1">{{ s.health_score }}%</h3>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="bg-light p-3 rounded-3 border text-center">
+                <small class="text-muted d-block text-uppercase fw-bold fs-12">Innovation Metric</small>
+                <h3 class="fw-bold text-info mb-0 mt-1">{{ s.innovation_score }}%</h3>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="bg-light p-3 rounded-3 border text-center">
+                <small class="text-muted d-block text-uppercase fw-bold fs-12">Work Logs Logged</small>
+                <h3 class="fw-bold text-primary mb-0 mt-1">{{ s.total_work_logs }}</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-dark text-white rounded-3 font-monospace fs-13">
+            <small class="text-muted d-block mb-1">Snapshot State Payload (JSON):</small>
+            <code>{{ s.snapshot_json }}</code>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentStep = 1;
+const totalSteps = parseInt('{{ snapshots|length|default:1 }}');
+let isPlaying = false;
+let playInterval = null;
+
+function updateSnapshotView(val) {
+  currentStep = parseInt(val);
+  document.querySelectorAll('.snapshot-card-item').forEach(el => el.style.display = 'none');
+  const target = document.getElementById('snapshot-card-' + currentStep);
+  if (target) target.style.display = 'block';
+  
+  const scrubber = document.getElementById('timelineScrubber');
+  if (scrubber) scrubber.value = currentStep;
+
+  document.getElementById('snapshotVersionBadge').innerText = 'Version ' + currentStep + ' of ' + totalSteps;
+
+  document.querySelectorAll('.step-marker-btn').forEach(btn => btn.classList.remove('btn-info', 'text-white'));
+  const currentMarker = document.getElementById('marker-' + currentStep);
+  if (currentMarker) currentMarker.classList.add('btn-info', 'text-white');
+}
+
+function stepReplay(direction) {
+  let nextStep = currentStep + direction;
+  if (nextStep < 1) nextStep = totalSteps;
+  if (nextStep > totalSteps) nextStep = 1;
+  updateSnapshotView(nextStep);
+}
+
+function togglePlayReplay() {
+  const playIcon = document.getElementById('playIcon');
+  const playBtn = document.getElementById('playBtn');
+  
+  if (isPlaying) {
+    clearInterval(playInterval);
+    isPlaying = false;
+    playIcon.className = 'fa-solid fa-play me-1';
+    playBtn.innerHTML = '<i class="fa-solid fa-play me-1"></i> Play Replay';
+  } else {
+    isPlaying = true;
+    playBtn.innerHTML = '<i class="fa-solid fa-pause me-1"></i> Pause Replay';
+    playInterval = setInterval(() => {
+      stepReplay(1);
+    }, 2000);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  updateSnapshotView(1);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Risk Prediction Analysis | {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="nexus-card p-4 mb-4 bg-dark text-white">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <span class="badge bg-warning text-dark px-3 py-1 mb-2">HEURISTIC PREDICTIVE ENGINE</span>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i> Project Delay Risk Analysis</h2>
+        <p class="mb-0 text-white-50 fs-14">Automated risk assessment identifying timeline bottlenecks before milestone deadlines.</p>
+      </div>
+      <a href="{% url 'core:project_dashboard' project.slug %}" class="btn btn-outline-light rounded-pill px-4">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Risk Score Display Card -->
+    <div class="col-lg-4">
+      <div class="nexus-card p-4 text-center h-100">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Assessed Delay Probability</h5>
+        <div class="display-2 fw-extrabold text-{% if assessment.risk_category == 'LOW' %}success{% elif assessment.risk_category == 'MEDIUM' %}warning{% else %}danger{% endif %} my-3">
+          {{ assessment.risk_score }}%
+        </div>
+        <span class="badge badge-{% if assessment.risk_category == 'LOW' %}low{% elif assessment.risk_category == 'MEDIUM' %}medium{% else %}high{% endif %} fs-14 px-4 py-2">
+          {{ assessment.get_risk_category_display }}
+        </span>
+        <p class="text-muted mt-3 fs-14 mb-0">Predicted Delay Impact: <strong>+{{ assessment.predicted_delay_days }} Days</strong></p>
+      </div>
+    </div>
+
+    <!-- Factors & Recommendations Card -->
+    <div class="col-lg-8">
+      <div class="nexus-card p-4 h-100">
+        <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="fa-solid fa-flag text-danger me-2"></i> Identified Risk Factors</h5>
+        <ul class="list-group list-group-flush mb-4">
+          {% for factor in factors %}
+            <li class="list-group-item px-0 text-danger fw-semibold"><i class="fa-solid fa-circle-exclamation me-2"></i> {{ factor }}</li>
+          {% empty %}
+            <li class="list-group-item px-0 text-success fw-semibold"><i class="fa-solid fa-circle-check me-2"></i> No high-level risk factors detected. Project is progressing cleanly!</li>
+          {% endfor %}
+        </ul>
+
+        <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="fa-solid fa-lightbulb text-warning me-2"></i> Recommended Corrective Actions</h5>
+        <ul class="list-group list-group-flush">
+          {% for rec in recommendations %}
+            <li class="list-group-item px-0 text-dark"><i class="fa-solid fa-hand-point-right text-primary me-2"></i> {{ rec }}</li>
+          {% empty %}
+            <li class="list-group-item px-0 text-muted">Maintain current work log frequency and milestone pace.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

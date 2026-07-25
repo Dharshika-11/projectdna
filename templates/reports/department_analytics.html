@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Department Analytics Report | PROJECTDNA NEXUS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="nexus-card p-4 mb-4 bg-primary text-white">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <span class="badge bg-white text-primary fw-bold px-3 py-1 mb-2">EXECUTIVE ANALYTICS</span>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-chart-pie text-white me-2"></i> Department Performance Report</h2>
+        <p class="mb-0 text-white-50 fs-14">{{ department.name|default:"Computer Science" }} Evaluation Summary</p>
+      </div>
+      <button onclick="window.print()" class="btn btn-light rounded-pill px-4 fw-bold shadow">
+        <i class="fa-solid fa-print me-1 text-primary"></i> Print Executive Summary
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="nexus-card p-3 text-center">
+        <span class="text-muted fs-12 text-uppercase fw-bold">Active Projects</span>
+        <h3 class="fw-bold text-primary mb-0 mt-1">{{ active_count }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="nexus-card p-3 text-center">
+        <span class="text-muted fs-12 text-uppercase fw-bold">Completed & Archived</span>
+        <h3 class="fw-bold text-success mb-0 mt-1">{{ completed_count }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="nexus-card p-3 text-center">
+        <span class="text-muted fs-12 text-uppercase fw-bold">High Risk Projects</span>
+        <h3 class="fw-bold text-danger mb-0 mt-1">{{ high_risk_count }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="nexus-card p-3 text-center">
+        <span class="text-muted fs-12 text-uppercase fw-bold">Enrolled Students</span>
+        <h3 class="fw-bold text-info mb-0 mt-1">{{ students_count }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projects List Table -->
+  <div class="nexus-card p-4">
+    <h5 class="fw-bold mb-3 border-bottom pb-2">Department Projects Summary</h5>
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Project Title</th>
+            <th>Guide</th>
+            <th>Status</th>
+            <th>Health Score</th>
+            <th>Innovation</th>
+            <th>Risk Level</th>
+            <th>Report Export</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in projects %}
+            <tr>
+              <td class="fw-bold">{{ p.title }}</td>
+              <td>{{ p.guide.get_full_name|default:"Unassigned" }}</td>
+              <td><span class="badge bg-primary">{{ p.get_status_display }}</span></td>
+              <td class="fw-bold text-success">{{ p.health_score }}%</td>
+              <td class="fw-bold text-info">{{ p.innovation_score }}%</td>
+              <td><span class="badge badge-{% if p.risk_level == 'LOW' %}low{% elif p.risk_level == 'MEDIUM' %}medium{% else %}high{% endif %}">{{ p.get_risk_level_display }}</span></td>
+              <td>
+                <a href="{% url 'reports:export_project_pdf' p.slug %}" class="btn btn-sm btn-outline-dark">
+                  <i class="fa-solid fa-file-arrow-down me-1"></i> TXT/PDF Summary
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7" class="text-center py-4 text-muted">No projects found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
